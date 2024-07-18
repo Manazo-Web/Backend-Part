@@ -4,8 +4,10 @@ using System.Collections.Generic;
 public class ProductFormModel
 {
     public String ProductId { get; set; } = null!;
+    public String SalerId { get; set; } = null!;
     public String ProductName { get; set; } = null!;
     public String? Description { get; set; }
+    public String Categories { get; set; } = null!;
     public decimal Price { get; set; }
     public String Photo { get; set; } = null!;
     public List<Review>? Reviews { get; set; }
