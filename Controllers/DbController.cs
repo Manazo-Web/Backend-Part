@@ -97,6 +97,47 @@ namespace Manazo.Controllers
             }
         }
 
+        [HttpGet("GetUser")]
+        public async Task<IActionResult> GetUser([FromQuery] string RegLogin, [FromQuery] string RegPassword)
+        {
+            try
+            {
+                Microsoft.Azure.Cosmos.Container container = await GetDbContainer();
+
+                var sqlQueryText = $"SELECT * FROM c WHERE c.RegLogin = '{RegLogin}' AND c.RegPassword = '{RegPassword}'";
+                QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+                FeedIterator<UserFormModel> queryResultSetIterator = container.GetItemQueryIterator<UserFormModel>(queryDefinition);
+
+                List<UserFormModel> users = new List<UserFormModel>();
+
+                while (queryResultSetIterator.HasMoreResults)
+                {
+                    FeedResponse<UserFormModel> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                    foreach (UserFormModel user in currentResultSet)
+                    {
+                        users.Add(user);
+                    }
+                }
+
+                if (users.Count == 0)
+                {
+                    return NotFound($"User with login {RegLogin} not found.");
+                }
+                else if (users.Count > 1)
+                {
+                    return BadRequest("Multiple users with the same credentials were detected. Please check the details.");
+                }
+                else
+                {
+                    return Ok(users[0]);
+                }
+            }
+            catch (CosmosException ex)
+            {
+                return StatusCode((int)ex.StatusCode, ex.Message);
+            }
+        }
+
         [HttpGet("GetItem")]
         public async Task<IActionResult> GetItem([FromQuery] string id)
         {
@@ -110,6 +151,22 @@ namespace Manazo.Controllers
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return NotFound($"Item with id {id} not found.");
+            }
+        }
+
+        [HttpGet("GetItem")]
+        public async Task<IActionResult> GetItemByTitle([FromQuery] string title)
+        {
+            try
+            {
+                Microsoft.Azure.Cosmos.Container container = await GetDbContainer();
+
+                var product = await container.ReadItemAsync<ProductFormModel>(title, new PartitionKey(title));
+                return Ok(product.Resource);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return NotFound($"Item with title {title} not found.");
             }
         }
 
