@@ -1,0 +1,8 @@
+﻿{
+  "CosmosDb": {
+    "Endpoint": "https://your-database-reference/",
+    "Key": "yOurDataBAseK3yR3fEr3Nc3==",
+    "DatabaseId": "YourDataBaseId",
+    "ContainerId": "YourDataBaseContainerId"
+  }
+}
